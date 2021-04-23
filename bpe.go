@@ -2,30 +2,11 @@ package bpe
 
 import (
 	"sort"
-	"strings"
 )
 
 type BPE struct {
-	vocab map[string]struct{} // Set with fast vocab search.
-}
-
-func (m *BPE) String() string {
-	builder := strings.Builder{}
-	builder.WriteString("Vocabulary: ")
-
-	if len(m.vocab) == 0 {
-		return "empty"
-	}
-
-	for t := range m.vocab {
-		builder.WriteByte('"')
-		builder.WriteString(t)
-		builder.WriteString(`", `)
-	}
-
-	result := builder.String()
-
-	return result[:len(result)-2]
+	maxTokenLength int
+	vocab          map[string]struct{} // Set with fast vocab search.
 }
 
 type weightedToken struct {
@@ -33,7 +14,7 @@ type weightedToken struct {
 	Weight int
 }
 
-func newModelFromTokensFrequencyTable(tft tokensFrequencyTable, tokensLimit int) *BPE {
+func newModelFromTokensFrequencyTable(tft tokensFrequencyTable, tokensLimit, maxTokenLength int) *BPE {
 	tokensListWithWeights := make([]weightedToken, 0, len(tft))
 
 	for t, w := range tft {
@@ -59,6 +40,7 @@ func newModelFromTokensFrequencyTable(tft tokensFrequencyTable, tokensLimit int)
 	}
 
 	return &BPE{
-		vocab: vocab,
+		maxTokenLength: maxTokenLength,
+		vocab:          vocab,
 	}
 }
