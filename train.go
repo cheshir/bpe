@@ -3,39 +3,33 @@ package bpe
 import (
 	"bufio"
 	"io"
-	"os"
 	"unicode"
 
 	"github.com/pkg/errors"
 )
 
-const maxTokenLength = 5
-const scanBufferSize = 64 * 1024
+// Train returns BPE instance with vocabulary learned from source.
+func Train(source io.Reader, opts ...TrainOption) (*BPE, error) {
+	options := &TrainOptions{}
+	options.Apply(opts...)
 
-func Train(file string, tokensLimit int) (*BPE, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to open file")
-	}
-	defer f.Close()
-
-	tft, err := buildFrequencyTable(f, tokensLimit)
+	tft, err := calculateTokensFrequency(source, options)
 	if err != nil {
 		return nil, err
 	}
 
-	model := newModelFromTokensFrequencyTable(tft, tokensLimit)
+	model := newModelFromTokensFrequencyTable(tft, options.MaxNumberOfTokens)
 
 	return model, nil
 }
 
-type tokenFrequencyTable map[string]int
+type tokensFrequencyTable map[string]int
 
-func buildFrequencyTable(r io.Reader, tokensLimit int) (tokenFrequencyTable, error) {
-	tokensFrequency := make(tokenFrequencyTable, tokensLimit) // Approximated size.
+func calculateTokensFrequency(r io.Reader, options *TrainOptions) (tokensFrequencyTable, error) {
+	tokensFrequency := make(tokensFrequencyTable, options.MaxNumberOfTokens) // Approximate size. Avoid extra allocations.
 	scanner := bufio.NewScanner(r)
 	scanner.Split(bufio.ScanWords)
-	scanner.Buffer(make([]byte, 0, scanBufferSize), scanBufferSize)
+	scanner.Buffer(make([]byte, 0, options.ScanBufferSize), options.ScanBufferSize)
 
 	// TODO read in separate threads.
 	for scanner.Scan() {
@@ -48,14 +42,14 @@ func buildFrequencyTable(r io.Reader, tokensLimit int) (tokenFrequencyTable, err
 		}
 
 		word := scanner.Text()
-		tokenize(tokensFrequency, word, maxTokenLength)
+		tokenize(tokensFrequency, word, options.MaxTokenLength)
 	}
 
 	return tokensFrequency, nil
 }
 
 // Preserve Unicode symbols.
-func tokenize(tokens tokenFrequencyTable, word string, maxTokenLength int) {
+func tokenize(tokens tokensFrequencyTable, word string, maxTokenLength int) {
 	for i, char := range word {
 		tokens[string(char)]++
 
@@ -79,6 +73,7 @@ func tokenize(tokens tokenFrequencyTable, word string, maxTokenLength int) {
 	}
 }
 
+// isWordChar checks that given word contains only letters and hyphens.
 func isWordChar(char rune) bool {
 	if !unicode.IsLetter(char) && char != '-' {
 		return false

@@ -2,17 +2,21 @@ package bpe
 
 import (
 	"fmt"
+	"log"
 	"reflect"
+	"strings"
 	"testing"
 )
 
-func TestTrain(t *testing.T) {
-	m, err := Train("/Users/cheshir/projects/go-mod/bpe/example.txt", 1000)
+func ExampleTrain() {
+	source := strings.NewReader("Lorem Ipsum")
+	m, err := Train(source, WithDefaultTrainOptions())
 	if err != nil {
-		t.Error(err)
+		log.Fatalln(err)
 	}
 
-	fmt.Printf("BPE: %s\n", m)
+	fmt.Printf("%d", len(m.vocab))
+	// Output: 29
 }
 
 func TestTokenize(t *testing.T) {
@@ -20,11 +24,11 @@ func TestTokenize(t *testing.T) {
 
 	tt := []struct {
 		word     string
-		expected tokenFrequencyTable
+		expected tokensFrequencyTable
 	}{
 		{
 			word: "12314",
-			expected: tokenFrequencyTable{
+			expected: tokensFrequencyTable{
 				"1": 2,
 				"2": 1,
 				"3": 1,
@@ -33,7 +37,7 @@ func TestTokenize(t *testing.T) {
 		},
 		{
 			word: "abcad",
-			expected: tokenFrequencyTable{
+			expected: tokensFrequencyTable{
 				"a":   2,
 				"b":   1,
 				"c":   1,
@@ -49,7 +53,7 @@ func TestTokenize(t *testing.T) {
 		},
 		{
 			word: "a-b",
-			expected: tokenFrequencyTable{
+			expected: tokensFrequencyTable{
 				"a":   1,
 				"a-":  1,
 				"a-b": 1,
@@ -60,7 +64,7 @@ func TestTokenize(t *testing.T) {
 		},
 		{
 			word: "[xxx]",
-			expected: tokenFrequencyTable{
+			expected: tokensFrequencyTable{
 				"[":   1,
 				"]":   1,
 				"x":   3,
@@ -72,7 +76,7 @@ func TestTokenize(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.word, func(t *testing.T) {
-			actualTokens := make(tokenFrequencyTable, 0)
+			actualTokens := make(tokensFrequencyTable, 0)
 			tokenize(actualTokens, tc.word, maxTokenSize)
 
 			if !reflect.DeepEqual(tc.expected, actualTokens) {
