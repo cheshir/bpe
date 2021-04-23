@@ -77,16 +77,12 @@ func calculateTokensFrequency(r io.Reader, options *TrainOptions) (tokensFrequen
 
 	// TODO read in separate threads.
 	for scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			if err == io.EOF {
-				break
-			}
-
-			return nil, errors.Wrap(err, "file scan")
-		}
-
 		word := scanner.Text()
 		tokenize(tokensFrequency, word, options.MaxTokenLength)
+	}
+
+	if err := scanner.Err(); err != nil && err != io.EOF {
+		return nil, errors.Wrap(err, "file scan")
 	}
 
 	return tokensFrequency, nil
