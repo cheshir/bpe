@@ -1,4 +1,4 @@
-module bpe
+module github.com/cheshir/bpe
 
 go 1.15
 
