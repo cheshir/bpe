@@ -203,7 +203,7 @@ func TestTokenize(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.word, func(t *testing.T) {
-			actualTokens := make(tokensFrequencyTable, 0)
+			actualTokens := make(tokensFrequencyTable)
 			tokenize(actualTokens, tc.word, tc.maxTokenSize)
 
 			if !reflect.DeepEqual(tc.expected, actualTokens) {

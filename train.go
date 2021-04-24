@@ -8,53 +8,53 @@ import (
 	"github.com/pkg/errors"
 )
 
-var defaultTrainOptions = TrainOptions{
+var defaultTrainOptions = trainOptions{
 	MaxNumberOfTokens: 50000,
 	MaxTokenLength:    32,
 	ScanBufferSize:    64 * 1024,
 }
 
-type TrainOptions struct {
+type trainOptions struct {
 	MaxNumberOfTokens int
 	MaxTokenLength    int
 	ScanBufferSize    int
 }
 
-func (o *TrainOptions) Apply(opts ...TrainOption) {
+func (o *trainOptions) Apply(opts ...TrainOption) {
 	for _, opt := range opts {
 		opt(o)
 	}
 }
 
-type TrainOption func(opts *TrainOptions)
+type TrainOption func(opts *trainOptions)
 
 func WithDefaultTrainOptions() TrainOption {
-	return func(opts *TrainOptions) {
+	return func(opts *trainOptions) {
 		*opts = defaultTrainOptions
 	}
 }
 
 func WithMaxNumberOfTokensTrainOption(n int) TrainOption {
-	return func(opts *TrainOptions) {
+	return func(opts *trainOptions) {
 		opts.MaxNumberOfTokens = n
 	}
 }
 
 func WithMaxTokenLengthTrainOption(length int) TrainOption {
-	return func(opts *TrainOptions) {
+	return func(opts *trainOptions) {
 		opts.MaxTokenLength = length
 	}
 }
 
 func WithScanBufferSizeTrainOption(size int) TrainOption {
-	return func(opts *TrainOptions) {
+	return func(opts *trainOptions) {
 		opts.ScanBufferSize = size
 	}
 }
 
 // Train returns BPE instance with vocabulary learned from source.
 func Train(source io.Reader, opts ...TrainOption) (*BPE, error) {
-	options := &TrainOptions{}
+	options := &trainOptions{}
 	options.Apply(opts...)
 
 	tft, err := calculateTokensFrequency(source, options)
@@ -69,7 +69,7 @@ func Train(source io.Reader, opts ...TrainOption) (*BPE, error) {
 
 type tokensFrequencyTable map[string]int
 
-func calculateTokensFrequency(r io.Reader, options *TrainOptions) (tokensFrequencyTable, error) {
+func calculateTokensFrequency(r io.Reader, options *trainOptions) (tokensFrequencyTable, error) {
 	tokensFrequency := make(tokensFrequencyTable, options.MaxNumberOfTokens) // Approximate size. Avoid extra allocations.
 	scanner := bufio.NewScanner(r)
 	scanner.Split(bufio.ScanWords)

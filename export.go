@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-var defaultExportOptions = ExportOptions{
+var defaultExportOptions = exportOptions{
 	Encoder: &defaultEncoder{},
 }
 
@@ -13,20 +13,20 @@ type ModelEncoder interface {
 	Encode(w io.Writer, model interface{}) error
 }
 
-type ExportOptions struct {
+type exportOptions struct {
 	Encoder ModelEncoder
 }
 
-func (o *ExportOptions) Apply(opts ...ExportOption) {
+func (o *exportOptions) Apply(opts ...ExportOption) {
 	for _, opt := range opts {
 		opt(o)
 	}
 }
 
-type ExportOption func(opts *ExportOptions)
+type ExportOption func(opts *exportOptions)
 
 func WithEncoder(enc ModelEncoder) ExportOption {
-	return func(opts *ExportOptions) {
+	return func(opts *exportOptions) {
 		opts.Encoder = enc
 	}
 }
