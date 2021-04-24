@@ -8,10 +8,33 @@ import (
 	"github.com/pkg/errors"
 )
 
-var defaultTrainOptions = trainOptions{
-	MaxNumberOfTokens: 50000,
-	MaxTokenLength:    32,
-	ScanBufferSize:    64 * 1024,
+const (
+	defaultMaxNumberOfTokens = 50000
+	defaultMaxTokenLength    = 32
+	maxScanBufferSize        = 64 * 1024
+)
+
+// Train returns BPE instance with vocabulary learned from source.
+func Train(source io.Reader, opts ...TrainOption) (*BPE, error) {
+	options := defaultTrainOptions()
+	options.Apply(opts...)
+
+	tft, err := calculateTokensFrequency(source, options)
+	if err != nil {
+		return nil, err
+	}
+
+	model := newModelFromTokensFrequencyTable(tft, options.MaxNumberOfTokens)
+
+	return model, nil
+}
+
+func defaultTrainOptions() *trainOptions {
+	return &trainOptions{
+		MaxNumberOfTokens: defaultMaxNumberOfTokens,
+		MaxTokenLength:    defaultMaxTokenLength,
+		ScanBufferSize:    maxScanBufferSize,
+	}
 }
 
 type trainOptions struct {
@@ -27,12 +50,6 @@ func (o *trainOptions) Apply(opts ...TrainOption) {
 }
 
 type TrainOption func(opts *trainOptions)
-
-func WithDefaultTrainOptions() TrainOption {
-	return func(opts *trainOptions) {
-		*opts = defaultTrainOptions
-	}
-}
 
 func WithMaxNumberOfTokensTrainOption(n int) TrainOption {
 	return func(opts *trainOptions) {
@@ -50,21 +67,6 @@ func WithScanBufferSizeTrainOption(size int) TrainOption {
 	return func(opts *trainOptions) {
 		opts.ScanBufferSize = size
 	}
-}
-
-// Train returns BPE instance with vocabulary learned from source.
-func Train(source io.Reader, opts ...TrainOption) (*BPE, error) {
-	options := &trainOptions{}
-	options.Apply(opts...)
-
-	tft, err := calculateTokensFrequency(source, options)
-	if err != nil {
-		return nil, err
-	}
-
-	model := newModelFromTokensFrequencyTable(tft, options.MaxNumberOfTokens)
-
-	return model, nil
 }
 
 type tokensFrequencyTable map[string]int

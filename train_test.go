@@ -1,23 +1,10 @@
 package bpe
 
 import (
-	"fmt"
-	"log"
 	"reflect"
 	"strings"
 	"testing"
 )
-
-func ExampleTrain() {
-	source := strings.NewReader("Lorem Ipsum")
-	m, err := Train(source, WithDefaultTrainOptions())
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	fmt.Printf("%d", len(m.vocab))
-	// Output: 29
-}
 
 func TestTrain(t *testing.T) {
 	tt := []struct {
@@ -108,7 +95,7 @@ func TestTrain(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			options := []TrainOption{WithDefaultTrainOptions()}
+			options := make([]TrainOption, 0)
 			if tc.option != nil {
 				options = append(options, tc.option)
 			}

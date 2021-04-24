@@ -5,8 +5,26 @@ import (
 	"io"
 )
 
-var defaultExportOptions = exportOptions{
-	Encoder: &defaultEncoder{},
+func Export(model *BPE, w io.Writer, opts ...ExportOption) error {
+	options := defaultExportOptions()
+	options.Apply(opts...)
+
+	m := dto{
+		MaxTokenLength: model.maxTokenLength,
+		Vocab:          make([]string, 0, len(model.vocab)),
+	}
+
+	for t := range model.vocab {
+		m.Vocab = append(m.Vocab, t)
+	}
+
+	return options.Encoder.Encode(w, m)
+}
+
+func defaultExportOptions() *exportOptions {
+	return &exportOptions{
+		Encoder: &defaultEncoder{},
+	}
 }
 
 type ModelEncoder interface {
@@ -34,22 +52,6 @@ func WithEncoder(enc ModelEncoder) ExportOption {
 type dto struct {
 	MaxTokenLength int      `json:"max_token_length"`
 	Vocab          []string `json:"vocab"`
-}
-
-func Save(model *BPE, w io.Writer, opts ...ExportOption) error {
-	options := defaultExportOptions
-	options.Apply(opts...)
-
-	m := dto{
-		MaxTokenLength: model.maxTokenLength,
-		Vocab:          make([]string, 0, len(model.vocab)),
-	}
-
-	for t := range model.vocab {
-		m.Vocab = append(m.Vocab, t)
-	}
-
-	return options.Encoder.Encode(w, m)
 }
 
 type defaultEncoder struct{}

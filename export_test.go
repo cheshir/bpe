@@ -65,8 +65,8 @@ func TestExport(t *testing.T) {
 
 			buf := bytes.NewBuffer(nil)
 
-			if err := Save(tc.model, buf, opts...); err != nil && !tc.withError {
-				t.Errorf("Unexpected Save error %v", err)
+			if err := Export(tc.model, buf, opts...); err != nil && !tc.withError {
+				t.Errorf("Unexpected Export error %v", err)
 			}
 
 			actual := buf.String()
