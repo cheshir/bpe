@@ -14,7 +14,7 @@ type weightedToken struct {
 	Weight int
 }
 
-func newModelFromTokensFrequencyTable(tft tokensFrequencyTable, tokensLimit, maxTokenLength int) *BPE {
+func newModelFromTokensFrequencyTable(tft tokensFrequencyTable, tokensLimit int) *BPE {
 	tokensListWithWeights := make([]weightedToken, 0, len(tft))
 
 	for t, w := range tft {
@@ -33,10 +33,16 @@ func newModelFromTokensFrequencyTable(tft tokensFrequencyTable, tokensLimit, max
 		tokensListWithWeights = tokensListWithWeights[:tokensLimit]
 	}
 
+	var maxTokenLength int
 	vocab := make(map[string]struct{}, len(tokensListWithWeights))
 
 	for _, t := range tokensListWithWeights {
-		vocab[*t.Token] = struct{}{}
+		token := *t.Token
+		if len(token) > maxTokenLength {
+			maxTokenLength = len(token)
+		}
+
+		vocab[token] = struct{}{}
 	}
 
 	return &BPE{

@@ -10,7 +10,7 @@ import (
 
 var defaultTrainOptions = TrainOptions{
 	MaxNumberOfTokens: 50000,
-	MaxTokenLength:    5,
+	MaxTokenLength:    32,
 	ScanBufferSize:    64 * 1024,
 }
 
@@ -62,7 +62,7 @@ func Train(source io.Reader, opts ...TrainOption) (*BPE, error) {
 		return nil, err
 	}
 
-	model := newModelFromTokensFrequencyTable(tft, options.MaxNumberOfTokens, options.MaxTokenLength)
+	model := newModelFromTokensFrequencyTable(tft, options.MaxNumberOfTokens)
 
 	return model, nil
 }

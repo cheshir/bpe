@@ -34,7 +34,6 @@ func TestExport(t *testing.T) {
 					"foo": 1,
 				},
 				1,
-				3,
 			),
 			expected: `{"max_token_length":3,"vocab":["foo"]}` + "\n",
 		},
