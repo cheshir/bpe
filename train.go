@@ -2,8 +2,10 @@ package bpe
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/pkg/errors"
 )
@@ -13,8 +15,11 @@ const (
 	defaultMaxTokenLength    = 32
 	maxScanBufferSize        = 64 * 1024
 
-	// End Of Word
-	eow = "</w>"
+	BeginOfWord     = "<w>"
+	EndOfWord       = "</w>"
+	BeginOfSentence = "<s>"
+	EndOfSentence   = "</s>"
+	UnknownToken    = "<u>"
 )
 
 // Train returns BPE instance with vocabulary learned from source.
@@ -77,7 +82,7 @@ type tokensFrequencyTable map[string]int
 func calculateTokensFrequency(r io.Reader, options *trainOptions) (tokensFrequencyTable, error) {
 	tokensFrequency := make(tokensFrequencyTable, options.MaxNumberOfTokens) // Approximate size. Avoid extra allocations.
 	scanner := bufio.NewScanner(r)
-	scanner.Split(bufio.ScanWords)
+	scanner.Split(scanSentences)
 	scanner.Buffer(make([]byte, 0, options.ScanBufferSize), options.ScanBufferSize)
 
 	// TODO read in separate threads.
@@ -102,8 +107,10 @@ func tokenize(tokens tokensFrequencyTable, word string, maxTokenLength int) {
 			continue
 		}
 
-		for j, char2 := range word[i+1:] {
-			i2 := i + j + 2
+		width := utf8.RuneLen(char)
+
+		for j, char2 := range word[i+width:] {
+			i2 := i + j + width
 
 			if i2-i > maxTokenLength {
 				break
@@ -113,9 +120,41 @@ func tokenize(tokens tokensFrequencyTable, word string, maxTokenLength int) {
 				break
 			}
 
+			fmt.Printf("%v\n", word[i:i2])
 			tokens[word[i:i2]]++
 		}
 	}
+}
+
+// Reference: bufio.ScanWords
+func scanSentences(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	start := 0
+
+	// Skip leading spaces.
+	for pos, symbol := range string(data) {
+		if !unicode.IsSpace(symbol) {
+			break
+		}
+
+		start = pos
+	}
+
+	// Scan until space, marking end of word.
+	for width, i := 0, start; i < len(data); i += width {
+		var r rune
+		r, width = utf8.DecodeRune(data[i:])
+		if unicode.IsSpace(r) {
+			return i + width, data[start:i], nil
+		}
+	}
+
+	// If we're at EOF, we have a final, non-empty, non-terminated sentence. Return it.
+	if atEOF && len(data) > start {
+		return len(data), data[start:], nil
+	}
+
+	// Request more data.
+	return start, nil, nil
 }
 
 // isWordChar checks that given word contains only letters and hyphens.
