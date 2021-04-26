@@ -2,7 +2,6 @@ package bpe
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"unicode"
 	"unicode/utf8"
@@ -107,10 +106,10 @@ func tokenize(tokens tokensFrequencyTable, word string, maxTokenLength int) {
 			continue
 		}
 
-		width := utf8.RuneLen(char)
+		beginWidth := utf8.RuneLen(char)
 
-		for j, char2 := range word[i+width:] {
-			i2 := i + j + width
+		for j, char2 := range word[i+beginWidth:] {
+			i2 := i + beginWidth + j + utf8.RuneLen(char2)
 
 			if i2-i > maxTokenLength {
 				break
@@ -120,7 +119,6 @@ func tokenize(tokens tokensFrequencyTable, word string, maxTokenLength int) {
 				break
 			}
 
-			fmt.Printf("%v\n", word[i:i2])
 			tokens[word[i:i2]]++
 		}
 	}
