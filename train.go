@@ -12,6 +12,9 @@ const (
 	defaultMaxNumberOfTokens = 50000
 	defaultMaxTokenLength    = 32
 	maxScanBufferSize        = 64 * 1024
+
+	// End Of Word
+	eow = "</w>"
 )
 
 // Train returns BPE instance with vocabulary learned from source.
@@ -51,19 +54,19 @@ func (o *trainOptions) Apply(opts ...TrainOption) {
 
 type TrainOption func(opts *trainOptions)
 
-func WithMaxNumberOfTokensTrainOption(n int) TrainOption {
+func WithMaxNumberOfTokens(n int) TrainOption {
 	return func(opts *trainOptions) {
 		opts.MaxNumberOfTokens = n
 	}
 }
 
-func WithMaxTokenLengthTrainOption(length int) TrainOption {
+func WithMaxTokenLength(length int) TrainOption {
 	return func(opts *trainOptions) {
 		opts.MaxTokenLength = length
 	}
 }
 
-func WithScanBufferSizeTrainOption(size int) TrainOption {
+func WithScanBufferSize(size int) TrainOption {
 	return func(opts *trainOptions) {
 		opts.ScanBufferSize = size
 	}

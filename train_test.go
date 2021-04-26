@@ -17,7 +17,7 @@ func TestTrain(t *testing.T) {
 		{
 			name:   "word",
 			input:  "apple",
-			option: WithMaxTokenLengthTrainOption(3),
+			option: WithMaxTokenLength(3),
 			expected: map[string]struct{}{
 				"a":   {},
 				"p":   {},
@@ -63,7 +63,7 @@ func TestTrain(t *testing.T) {
 		{
 			name:   "max token length",
 			input:  "aaaaaaaaa",
-			option: WithMaxTokenLengthTrainOption(5),
+			option: WithMaxTokenLength(5),
 			expected: map[string]struct{}{
 				"a":     {},
 				"aa":    {},
@@ -75,7 +75,7 @@ func TestTrain(t *testing.T) {
 		{
 			name:   "max tokens",
 			input:  "aaaaaaaaa",
-			option: WithMaxNumberOfTokensTrainOption(1),
+			option: WithMaxNumberOfTokens(1),
 			expected: map[string]struct{}{
 				"a": {},
 			},
@@ -88,7 +88,7 @@ func TestTrain(t *testing.T) {
 		{
 			name:      "error",
 			input:     "asdasdasd",
-			option:    WithScanBufferSizeTrainOption(1),
+			option:    WithScanBufferSize(1),
 			withError: true, // bufio.Scanner: token too long
 		},
 	}

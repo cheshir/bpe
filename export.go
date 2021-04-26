@@ -9,7 +9,7 @@ func Export(model *BPE, w io.Writer, opts ...ExportOption) error {
 	options := defaultExportOptions()
 	options.Apply(opts...)
 
-	m := dto{
+	m := exportedModel{
 		MaxTokenLength: model.maxTokenLength,
 		Vocab:          make([]string, 0, len(model.vocab)),
 	}
@@ -49,7 +49,7 @@ func WithEncoder(enc ModelEncoder) ExportOption {
 	}
 }
 
-type dto struct {
+type exportedModel struct {
 	MaxTokenLength int      `json:"max_token_length"`
 	Vocab          []string `json:"vocab"`
 }
