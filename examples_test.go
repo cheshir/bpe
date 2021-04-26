@@ -49,3 +49,19 @@ func ExampleExport() {
 	fmt.Printf("%s", destination)
 	// Output: {"max_token_length":1,"vocab":["x"]}
 }
+
+func ExampleImport() {
+	// You can import model from various sources using io.Reader.
+	// E.g. import from file:
+	// source, err := os.Open("/path/to/file.json")
+	// if err != nil { /* Handle error */ }
+	// model, err := Import(source)
+	source := strings.NewReader(`{"vocab":["token"]}`)
+	model, err := Import(source)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("%s", model.vocab)
+	// Output: map[token:{}]
+}
