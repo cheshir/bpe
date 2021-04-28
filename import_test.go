@@ -58,12 +58,18 @@ func TestImport(t *testing.T) {
 			withError: false,
 		},
 		{
-			name:     "encoder returns error",
+			name:     "decoder error",
 			source:   strings.NewReader(""),
 			expected: nil,
 			decoderMock: &decoderMock{
 				err: errors.New("Some error"),
 			},
+			withError: true,
+		},
+		{
+			name:      "default decoder error",
+			source:    strings.NewReader("{"),
+			expected:  nil,
 			withError: true,
 		},
 	}

@@ -46,8 +46,9 @@ func ExampleExport() {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("%s", destination)
-	// Output: {"max_token_length":1,"vocab":["x"]}
+	// vocab = <w>x</w>, default JSON formatter converts string to unicode sequences.
+	fmt.Println(destination)
+	// Output: {"max_token_length":1,"vocab":["\u003cw\u003ex\u003c/w\u003e"]}
 }
 
 func ExampleImport() {

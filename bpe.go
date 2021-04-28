@@ -2,6 +2,7 @@ package bpe
 
 import (
 	"sort"
+	"strings"
 )
 
 type BPE struct {
@@ -38,8 +39,19 @@ func newModelFromTokensFrequencyTable(tft tokensFrequencyTable, tokensLimit int)
 
 	for _, t := range tokensListWithWeights {
 		token := *t.Token
+
+		// TODO consider removing it and using value from config.
+		// Need to check necessity for this change with benchmarks.
+		tokenLength := len(token)
+		if strings.HasPrefix(token, BeginOfWord) {
+			tokenLength -= len(BeginOfWord)
+		}
+		if strings.HasSuffix(token, EndOfWord) {
+			tokenLength -= len(EndOfWord)
+		}
+
 		if len(token) > maxTokenLength {
-			maxTokenLength = len(token)
+			maxTokenLength = tokenLength
 		}
 
 		vocab[token] = struct{}{}
