@@ -48,7 +48,7 @@ func ExampleExport() {
 
 	// vocab = <w>x</w>, default JSON formatter converts string to unicode sequences.
 	fmt.Println(destination)
-	// Output: {"max_token_length":1,"vocab":["\u003cw\u003ex\u003c/w\u003e"]}
+	// Output: {"max_token_length":8,"vocab":["\u003cw\u003ex\u003c/w\u003e"]}
 }
 
 func ExampleImport() {
@@ -65,4 +65,21 @@ func ExampleImport() {
 
 	fmt.Printf("%s", model.vocab)
 	// Output: map[token:{}]
+}
+
+func ExampleEncode() {
+	source := strings.NewReader(`Lorem Ipsum`)
+	model, err := Train(source)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	text := strings.NewReader(`Ipsum Lorem`)
+	tokens, err := model.Encode(text)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("%v", tokens)
+	// Output: [<s> <w>Ipsum</w> <w>Lorem</w> </s>]
 }
