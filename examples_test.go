@@ -67,7 +67,7 @@ func ExampleImport() {
 	// Output: map[token:{}]
 }
 
-func ExampleEncode() {
+func ExampleBPE_Encode() {
 	source := strings.NewReader(`Lorem Ipsum`)
 	model, err := Train(source)
 	if err != nil {
@@ -82,4 +82,19 @@ func ExampleEncode() {
 
 	fmt.Printf("%v", tokens)
 	// Output: [<s> <w>Ipsum</w> <w>Lorem</w> </s>]
+}
+
+func ExampleBPE_Decode() {
+	model := &BPE{}
+	tokens := []string{
+		"<s>", "<w>Th", "is</w>", "<w>is</w>", "<w>j", "u", "st</w>", "<w>an</w>", "<w>ex", "ample", ".</w>", "</s>",
+	}
+
+	result, err := model.Decode(tokens)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("%v", result)
+	// Output: This is just an example.
 }

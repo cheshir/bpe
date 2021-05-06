@@ -182,3 +182,45 @@ func TestBPE_Encode(t *testing.T) {
 		})
 	}
 }
+
+func TestBPE_Decode(t *testing.T) {
+	tt := []struct {
+		name      string
+		tokens    []string
+		expected  string
+		withError bool
+	}{
+		{
+			name: "sentence",
+			tokens: []string{
+				"<s>", "<w>Th", "is</w>", "<w>is</w>", "<w>j", "u", "st</w>",
+				"<w>an</w>", "<w>ex", "ample", ".</w>", "</s>",
+			},
+			expected: "This is just an example.",
+		},
+		{
+			name:     "ampty",
+			tokens:   []string{},
+			expected: "",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			b := &BPE{}
+			actual, err := b.Decode(tc.tokens)
+			if err != nil && !tc.withError {
+				t.Fatalf("Unexpected error: %v\n", err)
+				return
+			}
+
+			if tc.withError {
+				t.Fatalf("Error expected got: %v\n", actual)
+			}
+
+			if tc.expected != actual {
+				t.Errorf("Expected: '%v'\nGot: '%v'\n", tc.expected, actual)
+			}
+		})
+	}
+}

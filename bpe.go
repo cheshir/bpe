@@ -76,6 +76,40 @@ tokenLoop:
 	}
 }
 
+// Decode todo description.
+// Error in response added for potential future usages to keep backward compatibility.
+func (b *BPE) Decode(tokens []string) (string, error) {
+	builder := strings.Builder{}
+
+	for _, token := range tokens {
+		// Skip special tokens.
+		// TODO Use special tokens from BPE.
+		if strings.HasPrefix(token, BeginOfSentence) {
+			token = token[len(BeginOfSentence):]
+		}
+
+		if strings.HasSuffix(token, EndOfSentence) {
+			token = token[:len(token)-len(EndOfSentence)]
+		}
+
+		if strings.HasPrefix(token, BeginOfWord) {
+			builder.WriteByte(' ')
+			token = token[len(BeginOfWord):]
+		}
+
+		if strings.HasSuffix(token, EndOfWord) {
+			token = token[:len(token)-len(EndOfWord)]
+		}
+
+		_, err := builder.WriteString(token)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return strings.TrimSpace(builder.String()), nil
+}
+
 func newModelFromTokensFrequencyTable(tft tokensFrequencyTable, tokensLimit int) *BPE {
 	tokensListWithWeights := make([]weightedToken, 0, len(tft))
 
