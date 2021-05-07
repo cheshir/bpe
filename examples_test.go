@@ -2,6 +2,7 @@ package bpe
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -15,7 +16,8 @@ func ExampleTrain() {
 	// model, err := Train(source)
 	// Check available TrainOption for customization.
 	source := strings.NewReader("Lorem Ipsum")
-	model, err := Train(source)
+	ctx := context.Background()
+	model, err := Train(ctx, source)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -31,7 +33,8 @@ func ExampleTrain() {
 func ExampleExport() {
 	// To export model we need to create one.
 	source := strings.NewReader("x")
-	model, err := Train(source)
+	ctx := context.Background()
+	model, err := Train(ctx, source)
 
 	// For simplicity we're going to export model to bytes.Buffer,
 	// but you can export it wherever you want. E.g. to file:
@@ -69,7 +72,8 @@ func ExampleImport() {
 
 func ExampleBPE_Encode() {
 	source := strings.NewReader(`Lorem Ipsum`)
-	model, err := Train(source)
+	ctx := context.Background()
+	model, err := Train(ctx, source)
 	if err != nil {
 		log.Fatalln(err)
 	}

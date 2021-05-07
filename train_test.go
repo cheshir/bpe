@@ -1,9 +1,12 @@
 package bpe
 
 import (
+	"bytes"
+	"context"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestTrain(t *testing.T) {
@@ -145,7 +148,7 @@ func TestTrain(t *testing.T) {
 				options = append(options, tc.option)
 			}
 
-			m, err := Train(strings.NewReader(tc.input), options...)
+			m, err := Train(context.Background(), strings.NewReader(tc.input), options...)
 			if err != nil && !tc.withError {
 				t.Errorf("Unexpected error: %v", err)
 			}
@@ -162,6 +165,23 @@ func TestTrain(t *testing.T) {
 				t.Errorf("Expected: %v\nGot: %v\n", tc.expected, m.vocab)
 			}
 		})
+	}
+}
+
+func TestTrain_WithTimeout(t *testing.T) {
+	source := bytes.NewBuffer(nil)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+	defer cancel()
+
+	go func() {
+		for {
+			source.Write([]byte("some very important data."))
+		}
+	}()
+
+	_, err := Train(ctx, source)
+	if err != context.DeadlineExceeded {
+		t.Errorf("Context deadline error is expected")
 	}
 }
 

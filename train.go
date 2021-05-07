@@ -2,6 +2,7 @@ package bpe
 
 import (
 	"bufio"
+	"context"
 	"io"
 	"strings"
 	"unicode"
@@ -23,11 +24,11 @@ const (
 )
 
 // Train returns BPE instance with vocabulary learned from source.
-func Train(source io.Reader, opts ...TrainOption) (*BPE, error) {
+func Train(ctx context.Context, source io.Reader, opts ...TrainOption) (*BPE, error) {
 	options := defaultTrainOptions()
 	options.Apply(opts...)
 
-	tft, err := calculateTokensFrequency(source, options)
+	tft, err := calculateTokensFrequency(ctx, source, options)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +87,7 @@ func WithWordsOnly() TrainOption {
 
 type tokensFrequencyTable map[string]int
 
-func calculateTokensFrequency(r io.Reader, options *trainOptions) (tokensFrequencyTable, error) {
+func calculateTokensFrequency(ctx context.Context, r io.Reader, options *trainOptions) (tokensFrequencyTable, error) {
 	tokensFrequency := make(tokensFrequencyTable, options.MaxNumberOfTokens) // Approximate size. Avoid extra allocations.
 	scanner := bufio.NewScanner(r)
 	scanner.Split(scanSentences)
@@ -94,8 +95,13 @@ func calculateTokensFrequency(r io.Reader, options *trainOptions) (tokensFrequen
 
 	// TODO read in separate threads.
 	for scanner.Scan() {
-		sentence := scanner.Text()
-		tokenize(tokensFrequency, sentence, options.MaxTokenLength, options.WordsOnly)
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+			sentence := scanner.Text()
+			tokenize(tokensFrequency, sentence, options.MaxTokenLength, options.WordsOnly)
+		}
 	}
 
 	if err := scanner.Err(); err != nil && err != io.EOF {
