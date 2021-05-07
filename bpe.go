@@ -84,21 +84,13 @@ func (b *BPE) Decode(tokens []string) (string, error) {
 	for _, token := range tokens {
 		// Skip special tokens.
 		// TODO Use special tokens from BPE.
-		if strings.HasPrefix(token, BeginOfSentence) {
-			token = token[len(BeginOfSentence):]
-		}
-
-		if strings.HasSuffix(token, EndOfSentence) {
-			token = token[:len(token)-len(EndOfSentence)]
-		}
+		token = strings.TrimSuffix(token, BeginOfSentence)
+		token = strings.TrimSuffix(token, EndOfSentence)
+		token = strings.TrimSuffix(token, EndOfWord)
 
 		if strings.HasPrefix(token, BeginOfWord) {
 			builder.WriteByte(' ')
 			token = token[len(BeginOfWord):]
-		}
-
-		if strings.HasSuffix(token, EndOfWord) {
-			token = token[:len(token)-len(EndOfWord)]
 		}
 
 		_, err := builder.WriteString(token)
